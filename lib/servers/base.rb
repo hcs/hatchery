@@ -58,7 +58,7 @@ class Server
 
     post_hook
 
-    $log.info "Everything is shiny. Have fun with #{@instance}"
+    $log.info "Everything is shiny. Have fun with #{@hostname}"
   end
 
   ### Hooks
