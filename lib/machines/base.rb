@@ -55,6 +55,11 @@ class Machine
   end
 
   def ssh_hook ssh
+    # Set up hostname
+    ssh.stream "echo 127.0.0.1 #{@name} | sudo tee -a /etc/hosts"
+    ssh.stream "echo #{@name} | sudo tee /etc/hostname"
+
+    # Package upgrades
     ssh.stream 'sudo apt-get update'
     ssh.stream 'sudo apt-get upgrade -y'
   end
