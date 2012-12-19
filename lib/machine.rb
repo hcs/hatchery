@@ -14,6 +14,8 @@ class Machine
     # TODO: check if this instance already exists?
     $log.info "About to start instance #{@name} of type #{self.class.name}"
 
+    # The self.class::CONSTANT thing here is so subclasses can override the
+    # constants in a reasonable way
     @instance = $EC2.images[self.class::AMI].run_instance(
       :instance_type      => self.class::INSTANCE_TYPE,
       :key_name           => self.class::KEY_NAME,
@@ -32,15 +34,35 @@ class Machine
     @instance.ip_address = $EC2.elastic_ips.allocate :vpc => true
     $log.info "Allocated IP #{@instance.ip_address}"
 
+    launch_hook
+
     $log.info "Trying to SSH to #{@instance.ip_address}"
     remote_exec do |ssh|
-      $log.info "We're in!"
-      ssh.stream 'uname -a'
-      ssh.stream 'sudo apt-get update'
-      ssh.stream 'sudo apt-get upgrade -y'
+      $log.info "We're in! Calling SSH hook."
+      ssh_hook ssh
     end
+
+    post_hook
+
+    $log.info "Everything is shiny. Have fun with #{@instance}"
   end
 
+  ### Hooks
+
+  def launch_hook
+  end
+
+  def ssh_hook ssh
+    ssh.stream 'sudo apt-get update'
+    ssh.stream 'sudo apt-get upgrade -y'
+  end
+
+  def post_hook
+  end
+
+  ### Helpers
+
+  private
   def remote_exec &blk
     raise "No instance" unless @instance
     raise "No IP" unless @instance.ip_address
