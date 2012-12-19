@@ -16,4 +16,4 @@ AWS.config(YAML.load(fetch_secret 'config.yml'))
 $EC2 = AWS::EC2.new.regions[:'us-east-1']
 
 require 'lib/monkey'
-require 'lib/machines/base'
+require 'lib/servers/base'

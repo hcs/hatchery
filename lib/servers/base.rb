@@ -1,4 +1,4 @@
-class Machine
+class Server
   AMI = 'ami-3d4ff254' # Ubuntu 12.04.1 LTE
   KEY_NAME = 'HCS'
   SECURITY_GROUPS = ['sg-ec12f983'] # SSH access
