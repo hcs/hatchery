@@ -69,11 +69,12 @@ class Server
   def ssh_hook ssh
     # Set up hostname
     ssh.stream "echo 127.0.0.1 #{@hostname} | sudo tee -a /etc/hosts"
+    ssh.stream "sudo hostname #{@hostname}"
     ssh.stream "echo #{@hostname} | sudo tee /etc/hostname"
 
     # Package upgrades
     ssh.stream 'sudo apt-get update'
-    ssh.stream 'sudo apt-get upgrade -y'
+    ssh.stream 'sudo apt-get dist-upgrade -y'
   end
 
   def post_hook
