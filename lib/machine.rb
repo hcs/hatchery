@@ -30,6 +30,8 @@ class Machine
 
     raise "Status error!" unless @instance.status == :running
 
+    @instance.tag 'Name', :value => @name
+
     $log.info "Allocating an IP address for the new instance"
     @instance.ip_address = $EC2.elastic_ips.allocate :vpc => true
     $log.info "Allocated IP #{@instance.ip_address}"
