@@ -1,18 +1,29 @@
+require 'lib/hostname'
+
 class Server
   AMI = 'ami-3d4ff254' # Ubuntu 12.04.1 LTE
   KEY_NAME = 'HCS'
   SECURITY_GROUPS = ['sg-ec12f983'] # SSH access
   INSTANCE_TYPE = 'm1.small'
-  SUBNET = 'subnet-4111e52b' # Public subnet
   PRIVATE_KEY = 'HCS.pem'
 
-  def initialize name
-    @name = name
+  # Factory magic!
+  class << self
+    alias_method :the_real_new, :new
+
+    def new hostname
+      h = Hostname.new hostname
+      h.server_class.the_real_new h
+    end
+  end
+
+  def initialize hostname
+    @hostname = hostname
   end
 
   def create
     # TODO: check if this instance already exists?
-    $log.info "About to start instance #{@name} of type #{self.class.name}"
+    $log.info "About to start instance #{@hostname} of type #{self.class.name}"
 
     # The self.class::CONSTANT thing here is so subclasses can override the
     # constants in a reasonable way
@@ -20,17 +31,18 @@ class Server
       :instance_type      => self.class::INSTANCE_TYPE,
       :key_name           => self.class::KEY_NAME,
       :security_group_ids => self.class::SECURITY_GROUPS,
-      :subnet             => self.class::SUBNET
+      :subnet             => @hostname.subnet,
+      :private_ip_address => @hostname.ip
     )
 
-    $log.info "Waiting for #{@name}"
+    $log.info "Waiting for #{@hostname}"
     sleep 1 while @instance.status == :pending
 
     $log.info "Launched instance #{@instance.id}, status: #{@instance.status}"
 
     raise "Status error!" unless @instance.status == :running
 
-    @instance.tag 'Name', :value => @name
+    @instance.tag 'Name', :value => @hostname.to_s
 
     $log.info "Allocating an IP address for the new instance"
     @instance.ip_address = $EC2.elastic_ips.allocate :vpc => true
@@ -56,8 +68,8 @@ class Server
 
   def ssh_hook ssh
     # Set up hostname
-    ssh.stream "echo 127.0.0.1 #{@name} | sudo tee -a /etc/hosts"
-    ssh.stream "echo #{@name} | sudo tee /etc/hostname"
+    ssh.stream "echo 127.0.0.1 #{@hostname} | sudo tee -a /etc/hosts"
+    ssh.stream "echo #{@hostname} | sudo tee /etc/hostname"
 
     # Package upgrades
     ssh.stream 'sudo apt-get update'
