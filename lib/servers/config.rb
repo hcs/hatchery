@@ -13,6 +13,7 @@ class ConfigServer < Server
     ssh.stream 'sudo rm -r /var/lib/bcfg2'
     ssh.stream 'sudo git clone https://github.com/hcs/config.git /var/lib/bcfg2'
 
-    # TODO: run the bootstrap script (once it works!)
+    key = fetch_secret 'bcfg2-crypt-key'
+    ssh.stream "sudo /var/lib/bcfg2/bin/bootstrap #{key}"
   end
 end
