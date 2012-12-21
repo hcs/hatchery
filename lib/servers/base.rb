@@ -19,10 +19,18 @@ class Server
 
   def initialize hostname
     @hostname = hostname
+    AWS::memoize do
+      @instance = $EC2.instances.filter('tag:Name', @hostname.to_s).find do |i|
+        i.status != :terminated
+      end
+    end
   end
 
   def create
-    # TODO: check if this instance already exists?
+    if !@instance.nil? && @instance.status != :terminated
+      raise "Instance is already running! Refusing to create a duplicate"
+    end
+
     $log.info "About to start instance #{@hostname} of type #{self.class.name}"
 
     # The self.class::CONSTANT thing here is so subclasses can override the
@@ -45,6 +53,8 @@ class Server
 
     @instance.tag 'Name', :value => @hostname.to_s
 
+    # TODO: don't allocate EIPs for all boxes. In almost all cases you can
+    # probably just bounce through a config box
     $log.info "Allocating an IP address for the new instance"
     @instance.ip_address = $EC2.elastic_ips.allocate :vpc => true
     $log.info "Allocated IP #{@instance.ip_address}"
