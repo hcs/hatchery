@@ -72,6 +72,15 @@ class Server
     $log.info "Everything is shiny. Have fun with #{@hostname}"
   end
 
+  def terminate
+    if @instance.nil? || @instance.status == :terminated
+      raise "Instance is already gone (or maybe never existed)!"
+    end
+
+    # TODO: think about cleaning up EIPs?
+    @instance.terminate
+  end
+
   ### Hooks
 
   def launch_hook
