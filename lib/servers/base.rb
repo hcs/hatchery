@@ -1,7 +1,7 @@
 require 'lib/hostname'
 
 class Server
-  AMI = 'ami-3d4ff254' # Ubuntu 12.04.1 LTE
+  AMI = 'ami-d726abbe' # Ubuntu 12.04.1 LTS, using instance store
   KEY_NAME = 'HCS'
   SECURITY_GROUPS = ['sg-ec12f983'] # SSH access
   INSTANCE_TYPE = 'm1.small'
