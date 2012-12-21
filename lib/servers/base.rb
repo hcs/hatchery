@@ -27,7 +27,8 @@ class Server
 
     # The self.class::CONSTANT thing here is so subclasses can override the
     # constants in a reasonable way
-    @instance = $EC2.images[self.class::AMI].run_instance(
+    @instance = $EC2.instances.create(
+      :image_id           => self.class::AMI,
       :instance_type      => self.class::INSTANCE_TYPE,
       :key_name           => self.class::KEY_NAME,
       :security_group_ids => self.class::SECURITY_GROUPS,
