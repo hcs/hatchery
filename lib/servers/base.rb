@@ -100,6 +100,14 @@ class Server
   def post_hook
   end
 
+  # Proxy some methods through to the underlying EC2 instance
+  [:id, :launch_time, :ip_address, :private_ip_address, :status].each do |m|
+    define_method m do |*args|
+      raise "Server does not exist yet!" if @instance.nil?
+      @instance.send m, *args
+    end
+  end
+
   ### Helpers
 
   private
