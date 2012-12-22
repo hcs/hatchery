@@ -17,6 +17,8 @@ class Server
     end
   end
 
+  attr_reader :hostname, :instance
+
   def initialize hostname
     @hostname = hostname
     AWS::memoize do

@@ -9,6 +9,8 @@ class Hostname
     {:subnet => 'subnet-25ba684f', :az => 'us-east-1d', :prefix => '10.0.4.'},
   ]
 
+  attr_reader :env, :type, :number, :domain
+
   def initialize host
     # [env-]servertype123[.foobar.com]
     match = host.match /^(?:([a-z]+)-)?([a-z]+)([0-9]+)(?:\.(.*))?$/i
