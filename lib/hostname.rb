@@ -44,5 +44,6 @@ class Hostname
   def to_s
     "#{shortname}.#{@domain}"
   end
+  alias_method :inspect, :to_s
 
 end
