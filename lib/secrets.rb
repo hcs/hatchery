@@ -20,5 +20,5 @@ end
 
 def fetch_secret name
   file = File.join(SECRETS_DIR, name)
-  `gpg -d #{shellescape file}`
+  `gpg -q -d #{shellescape file}`
 end
