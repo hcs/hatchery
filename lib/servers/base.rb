@@ -45,6 +45,7 @@ class Server
       :subnet             => @hostname.subnet,
       :private_ip_address => @hostname.ip
     )
+    @instance.tag 'Name', :value => @hostname.to_s
 
     $log.info "Waiting for #{@hostname}"
     sleep 1 while @instance.status == :pending
@@ -52,14 +53,6 @@ class Server
     $log.info "Launched instance #{@instance.id}, status: #{@instance.status}"
 
     raise "Status error!" unless @instance.status == :running
-
-    @instance.tag 'Name', :value => @hostname.to_s
-
-    # TODO: don't allocate EIPs for all boxes. In almost all cases you can
-    # probably just bounce through a config box
-    $log.info "Allocating an IP address for the new instance"
-    @instance.ip_address = $EC2.elastic_ips.allocate :vpc => true
-    $log.info "Allocated IP #{@instance.ip_address}"
 
     create_hook
 
@@ -104,24 +97,26 @@ class Server
 
   # SSH support
   def ssh cmd
-    connect if @ssh.nil?
+    if @ssh.nil?
+      key = fetch_secret self.class::PRIVATE_KEY
+      begin
+        @ssh = connect key
+        $log.info "Connected via SSH"
+      rescue SystemCallError, Timeout::Error => e
+        # From the sample code: "port 22 might not be available immediately
+        # after the instance finishes launching"
+        sleep 1
+        retry
+      end
+    end
 
     $log.info "#{@hostname}$ #{cmd}"
-
     @ssh.stream "TERM='#{ENV['TERM'] || 'vt100'}' #{cmd}"
   end
 
   private
-  def connect
-    key = fetch_secret self.class::PRIVATE_KEY
-    begin
-      @ssh = Net::SSH.start @instance.ip_address, 'ubuntu', :key_data => [key]
-      $log.info "Connected via SSH"
-    rescue SystemCallError, Timeout::Error => e
-      # From the sample code: "port 22 might not be available immediately after
-      # the instance finishes launching"
-      sleep 1
-      retry
-    end
+  def connect key
+    ip = @instance.private_ip_address
+    Net::SSH.start ip, 'ubuntu', :key_data => [key], :proxy => SSH_GATEWAY
   end
 end
