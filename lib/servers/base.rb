@@ -61,15 +61,7 @@ class Server
     @instance.ip_address = $EC2.elastic_ips.allocate :vpc => true
     $log.info "Allocated IP #{@instance.ip_address}"
 
-    launch_hook
-
-    $log.info "Trying to SSH to #{@instance.ip_address}"
-    remote_exec do |ssh|
-      $log.info "We're in! Calling SSH hook."
-      ssh_hook ssh
-    end
-
-    post_hook
+    create_hook
 
     $log.info "Everything is shiny. Have fun with #{@hostname}"
   end
@@ -85,21 +77,21 @@ class Server
 
   ### Hooks
 
-  def launch_hook
+  def create_hook
+    ssh_hook
   end
 
-  def ssh_hook ssh
+  def ssh_hook
+    $log.info "Trying to SSH to #{@instance.ip_address}"
+
     # Set up hostname
-    ssh.stream "echo 127.0.0.1 #{@hostname} | sudo tee -a /etc/hosts"
-    ssh.stream "sudo hostname #{@hostname}"
-    ssh.stream "echo #{@hostname} | sudo tee /etc/hostname"
+    ssh "echo 127.0.0.1 #{@hostname} | sudo tee -a /etc/hosts"
+    ssh "sudo hostname #{@hostname}"
+    ssh "echo #{@hostname} | sudo tee /etc/hostname"
 
     # Package upgrades
-    ssh.stream 'sudo apt-get update'
-    ssh.stream 'sudo apt-get dist-upgrade -y'
-  end
-
-  def post_hook
+    ssh 'sudo apt-get update'
+    ssh 'sudo apt-get dist-upgrade -y'
   end
 
   # Proxy some methods through to the underlying EC2 instance
@@ -110,15 +102,21 @@ class Server
     end
   end
 
-  ### Helpers
+  # SSH support
+  def ssh cmd
+    connect if @ssh.nil?
+
+    $log.info "#{@hostname}$ #{cmd}"
+
+    @ssh.stream "TERM='#{ENV['TERM'] || 'vt100'}' #{cmd}"
+  end
 
   private
-  def remote_exec &blk
-    raise "No instance" unless @instance
-    raise "No IP" unless @instance.ip_address
+  def connect
     key = fetch_secret self.class::PRIVATE_KEY
     begin
-      Net::SSH.start(@instance.ip_address, 'ubuntu', :key_data => [key], &blk)
+      @ssh = Net::SSH.start @instance.ip_address, 'ubuntu', :key_data => [key]
+      $log.info "Connected via SSH"
     rescue SystemCallError, Timeout::Error => e
       # From the sample code: "port 22 might not be available immediately after
       # the instance finishes launching"
