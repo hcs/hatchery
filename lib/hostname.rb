@@ -19,7 +19,7 @@ class Hostname
     @env = match[1] && match[1].downcase
     @type = match[2].downcase
     @number = match[3].to_i
-    @domain = match[4].nil? ? DOMAIN : match[4].downcase
+    @domain = match[4].nil? ? 'hcs.harvard.edu' : match[4].downcase
   end
 
   def server_class
