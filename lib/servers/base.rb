@@ -5,7 +5,6 @@ class Server
   KEY_NAME = 'HCS'
   SECURITY_GROUPS = ['sg-ec12f983'] # SSH access
   INSTANCE_TYPE = 'm1.small'
-  PRIVATE_KEY = 'HCS.pem'
 
   # Factory magic!
   class << self
@@ -48,11 +47,11 @@ class Server
     @instance.tag 'Name', :value => @hostname.to_s
 
     $log.info "Waiting for #{@hostname}"
-    sleep 1 while @instance.status == :pending
+    sleep 1 while status == :pending
 
-    $log.info "Launched instance #{@instance.id}, status: #{@instance.status}"
+    $log.info "Launched instance #{id}, status: #{status}"
 
-    raise "Status error!" unless @instance.status == :running
+    raise "Status error!" unless status == :running
 
     create_hook
 
@@ -75,8 +74,6 @@ class Server
   end
 
   def ssh_hook
-    $log.info "Trying to SSH to #{@instance.ip_address}"
-
     # Set up hostname
     ssh "echo 127.0.0.1 #{@hostname} | sudo tee -a /etc/hosts"
     ssh "sudo hostname #{@hostname}"
@@ -98,11 +95,11 @@ class Server
   # SSH support
   def ssh cmd
     if @ssh.nil?
-      key = fetch_secret self.class::PRIVATE_KEY
+      key = fetch_secret "#{self.class::KEY_NAME}.pem"
       begin
         @ssh = connect key
         $log.info "Connected via SSH"
-      rescue SystemCallError, Timeout::Error => e
+      rescue SystemCallError, Timeout::Error, Net::SSH::Disconnect => e
         # From the sample code: "port 22 might not be available immediately
         # after the instance finishes launching"
         sleep 1
@@ -116,7 +113,13 @@ class Server
 
   private
   def connect key
-    ip = @instance.private_ip_address
-    Net::SSH.start ip, 'ubuntu', :key_data => [key], :proxy => SSH_GATEWAY
+    if @gateway.nil?
+      $log.info "Connecting to #{private_ip_address} through gateway"
+      @gateway = Gateway.open private_ip_address
+
+      # This is hax.
+      ObjectSpace.define_finalizer self, proc { Gateway.close @gateway }
+    end
+    Net::SSH.start '127.0.0.1', 'ubuntu', :port => @gateway, :key_data => [key]
   end
 end
