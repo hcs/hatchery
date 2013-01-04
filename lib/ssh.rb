@@ -1,3 +1,5 @@
+require 'net/ssh/proxy/command'
+
 SSH_GATEWAY = Net::SSH::Proxy::Command.new("ssh gateway.#{DOMAIN} nc %h %p")
 
 class Net::SSH::Connection::Session
