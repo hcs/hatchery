@@ -1,6 +1,6 @@
 class FileServer < Server
   INSTANCE_TYPE = 'm1.large'
-  IP_RANGE = 250..253
+  IP_RANGE = 250...254
 
   def ssh_hook
     super
