@@ -2,6 +2,7 @@ class ConfigServer < Server
   AMI = 'ami-fd20ad94' # Ubuntu 12.04.1 LTS, using EBS
   INSTANCE_TYPE = 't1.micro'
   IP_RANGE = 4...10
+  SECURITY_GROUPS = ['sg-dede28b1']
 
   def ssh_hook
     super

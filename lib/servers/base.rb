@@ -3,7 +3,7 @@ require 'lib/hostname'
 class Server
   AMI = 'ami-d726abbe' # Ubuntu 12.04.1 LTS, using instance store
   KEY_NAME = 'HCS'
-  SECURITY_GROUPS = ['sg-ec12f983'] # SSH access
+  SECURITY_GROUPS = ['sg-5813f837']
   INSTANCE_TYPE = 'm1.small'
 
   # Factory magic!
