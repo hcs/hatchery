@@ -102,6 +102,7 @@ class Server
       rescue SystemCallError, Timeout::Error, Net::SSH::Disconnect => e
         # From the sample code: "port 22 might not be available immediately
         # after the instance finishes launching"
+        $log.info "SSH unavailable. Trying again in 1s!"
         sleep 1
         retry
       end
@@ -113,13 +114,7 @@ class Server
 
   private
   def connect key
-    if @gateway.nil?
-      $log.info "Connecting to #{private_ip_address} through gateway"
-      @gateway = Gateway.open private_ip_address
-
-      # This is hax.
-      ObjectSpace.define_finalizer self, proc { Gateway.close @gateway }
-    end
-    Net::SSH.start '127.0.0.1', 'ubuntu', :port => @gateway, :key_data => [key]
+    ip = private_ip_address
+    Net::SSH.start ip, 'ubuntu', :key_data => [key], :proxy => Gateway
   end
 end
