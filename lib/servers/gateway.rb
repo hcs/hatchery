@@ -3,6 +3,7 @@ class GatewayServer < Server
   INSTANCE_TYPE = 't1.micro'
   IP_RANGE = 10...15
   SECURITY_GROUPS = ['sg-dfde28b0']
+  PUBLIC = true
 
   def create_hook
     $log.info "Allocating an IP address for the gateway"

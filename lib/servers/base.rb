@@ -5,6 +5,7 @@ class Server
   KEY_NAME = 'HCS'
   SECURITY_GROUPS = ['sg-5813f837']
   INSTANCE_TYPE = 'm1.small'
+  PUBLIC = false
 
   # Factory magic!
   class << self
