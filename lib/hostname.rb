@@ -1,4 +1,8 @@
+require 'lib/pokemon'
+
 class Hostname
+  include Pokemon # Gotta catch 'em all!
+
   # Hosts are distributed round-robin amongst the following subnets. We're using
   # subnets as a proxy for availability zones, so try to cycle through AZs in a
   # reasonable way. We also assume all subnets are /24s, since it means we can
@@ -12,6 +16,7 @@ class Hostname
   attr_reader :env, :type, :number, :domain
 
   def initialize host
+    host = pokedex host
     # [env-]servertype123[.foobar.com]
     match = host.match /^(?:([a-z]+)-)?([a-z]+)([0-9]+)(?:\.(.*))?$/i
     raise "Invalid hostname" if match.nil?
@@ -41,11 +46,10 @@ class Hostname
 
   def shortname
     env_part = @env.nil? ? '' : "#{@env}-"
-    "#{env_part}#{@type}#{@number}"
+    pokemon_name || "#{env_part}#{@type}#{@number}"
   end
   def to_s
     "#{shortname}.#{@domain}"
   end
   alias_method :inspect, :to_s
-
 end
