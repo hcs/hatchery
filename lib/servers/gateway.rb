@@ -10,6 +10,12 @@ class GatewayServer < Server
     @instance.ip_address = $EC2.elastic_ips.allocate :vpc => true
     $log.info "Allocated IP #{@instance.ip_address}"
 
+    # Disable source/destination checking, so we can act as a NAT for other
+    # instances in the VPC.
+    @instance.network_interfaces.each do |ni|
+      ni.source_dest_check = false
+    end
+
     ssh_hook
 
     $log.info "Be sure to change the routing tables to go through instance #{id}"
