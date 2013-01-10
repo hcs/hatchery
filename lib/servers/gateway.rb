@@ -11,6 +11,8 @@ class GatewayServer < Server
     $log.info "Allocated IP #{@instance.ip_address}"
 
     ssh_hook
+
+    $log.info "Be sure to change the routing tables to go through instance #{id}"
   end
 
   private
