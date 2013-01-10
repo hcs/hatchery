@@ -76,7 +76,7 @@ class Server
 
   def ssh_hook
     # Set up hostname
-    ssh "echo #{private_ip_address} #{@hostname} | sudo tee -a /etc/hosts"
+    ssh "echo #{ip} #{@hostname} | sudo tee -a /etc/hosts"
     ssh "sudo hostname #{@hostname}"
     ssh "echo #{@hostname} | sudo tee /etc/hostname"
 
@@ -92,6 +92,7 @@ class Server
       @instance.send m, *args
     end
   end
+  alias_method :ip, :private_ip_address
 
   # SSH support
   def ssh cmd
@@ -115,7 +116,6 @@ class Server
 
   private
   def connect key
-    ip = private_ip_address
     Net::SSH.start ip, 'ubuntu', :key_data => [key], :proxy => Gateway
   end
 end
