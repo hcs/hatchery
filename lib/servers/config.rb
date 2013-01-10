@@ -7,6 +7,8 @@ class ConfigServer < Server
   def ssh_hook
     super
 
+    ssh "echo #{ip} config.hcs.harvard.edu | sudo tee -a /etc/hosts"
+
     # XXX: We should switch to the normal Bcfg2 PPA when 1.3.0 is released
     ssh 'sudo add-apt-repository ppa:bcfg2/precisetesting'
     ssh 'sudo apt-get update'
