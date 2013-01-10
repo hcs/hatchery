@@ -76,7 +76,7 @@ class Server
 
   def ssh_hook
     # Set up hostname
-    ssh "echo 127.0.0.1 #{@hostname} | sudo tee -a /etc/hosts"
+    ssh "echo #{private_ip_address} #{@hostname} | sudo tee -a /etc/hosts"
     ssh "sudo hostname #{@hostname}"
     ssh "echo #{@hostname} | sudo tee /etc/hostname"
 
