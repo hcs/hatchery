@@ -83,7 +83,7 @@ class Server
 
     # Package upgrades
     # XXX: We should switch to the normal Bcfg2 PPA when 1.3.0 is released
-    ssh 'sudo add-apt-repository ppa:bcfg2/precisetesting'
+    ssh 'sudo add-apt-repository -y ppa:bcfg2/precisetesting'
     ssh 'sudo apt-get update'
     ssh 'sudo apt-get dist-upgrade -y'
 
