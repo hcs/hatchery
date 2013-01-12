@@ -9,11 +9,7 @@ class ConfigServer < Server
 
     ssh "echo #{ip} config.hcs.harvard.edu | sudo tee -a /etc/hosts"
 
-    # XXX: We should switch to the normal Bcfg2 PPA when 1.3.0 is released
-    ssh 'sudo add-apt-repository ppa:bcfg2/precisetesting'
-    ssh 'sudo apt-get update'
-
-    ssh 'sudo apt-get install -y bcfg2-server bcfg2 git'
+    ssh 'sudo apt-get install -y bcfg2-server git'
     ssh 'sudo rm -r /var/lib/bcfg2'
     ssh 'sudo git clone https://github.com/hcs/config.git /var/lib/bcfg2'
 

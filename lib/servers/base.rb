@@ -82,8 +82,12 @@ class Server
     ssh "echo #{@hostname} | sudo tee /etc/hostname"
 
     # Package upgrades
+    # XXX: We should switch to the normal Bcfg2 PPA when 1.3.0 is released
+    ssh 'sudo add-apt-repository ppa:bcfg2/precisetesting'
     ssh 'sudo apt-get update'
     ssh 'sudo apt-get dist-upgrade -y'
+
+    ssh 'sudo apt-get install -y bcfg2'
   end
 
   # Proxy some methods through to the underlying EC2 instance
