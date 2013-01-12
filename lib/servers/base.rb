@@ -66,6 +66,7 @@ class Server
 
     # TODO: think about cleaning up EIPs?
     @instance.terminate
+    @instance = nil
   end
 
   ### Hooks
@@ -96,6 +97,7 @@ class Server
 
   # SSH support
   def ssh cmd
+    raise 'No instance' if @instance.nil?
     if @ssh.nil?
       key = fetch_secret "#{self.class::KEY_NAME}.pem"
       begin
