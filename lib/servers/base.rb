@@ -90,6 +90,12 @@ class Server
     ssh 'sudo apt-get install -y bcfg2'
   end
 
+  def finalize
+    raise 'Not bootstrapped yet' unless bootstrapped?
+
+    ssh 'deluser --remove-home ubuntu'
+  end
+
   # Proxy some methods through to the underlying EC2 instance
   [:id, :launch_time, :ip_address, :private_ip_address, :status].each do |m|
     define_method m do |*args|
@@ -120,8 +126,13 @@ class Server
     @ssh.stream "TERM='#{ENV['TERM'] || 'vt100'}' #{cmd}"
   end
 
+  def bootstrapped?
+    !@instance.tags['Bootstrapped'].nil?
+  end
+
   private
   def connect key
-    Net::SSH.start ip, 'ubuntu', :key_data => [key], :proxy => Gateway
+    user = bootstrapped? ? 'root' : 'ubuntu'
+    Net::SSH.start ip, user, :key_data => [key], :proxy => Gateway
   end
 end
