@@ -1,46 +1,6 @@
 require 'thread'
 require 'socket'
 
-class SSHocket
-  def self.open channel, host, port
-    @channel = channel
-    @recv_buffer = ""
-    @lock = Mutex.new
-
-    @channel.exec "nc #{shellescape host} #{shellescape port}" do |ch, ok|
-      unless ok
-        $log.error "Error SSHocketing to #{host}:#{port}"
-        raise Net::SSH::Disconnect
-      end
-
-      ch.on_data do |data|
-        @lock.synchronize do
-          @recv_buffer << data
-        end
-      end
-    end
-  end
-
-  def closed?
-    @channel.closing? || !@channel.active?
-  end
-
-  def close
-    @channel.close
-  end
-
-  def send data, flags
-    @channel.send_data data
-  end
-
-  def recv size
-    return nil if closed?
-    @lock.synchronize do
-      @recv_buffer.slice 0..size
-    end
-  end
-end
-
 class Gateway
   @@ssh = nil
   @@lock = Mutex.new
