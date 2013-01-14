@@ -22,7 +22,7 @@ class GatewayServer < Server
   end
 
   private
-  def connect key
+  def start_ssh key
     Net::SSH.start @instance.ip_address, 'ubuntu', :key_data => [key]
   end
 end

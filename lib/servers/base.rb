@@ -105,33 +105,47 @@ class Server
   end
   alias_method :ip, :private_ip_address
 
-  # SSH support
+  def bootstrapped?
+    !@instance.tags['Bootstrapped'].nil?
+  end
+
   def ssh cmd
     raise 'No instance' if @instance.nil?
-    if @ssh.nil?
-      key = fetch_secret "#{self.class::KEY_NAME}.pem"
-      begin
-        @ssh = connect key
-        $log.info "Connected via SSH"
-      rescue SystemCallError, Timeout::Error, Net::SSH::Disconnect => e
-        # From the sample code: "port 22 might not be available immediately
-        # after the instance finishes launching"
-        $log.info "SSH unavailable. Trying again in 1s!"
-        sleep 1
-        retry
-      end
-    end
+    connect if @ssh.nil?
 
     $log.info "#{@hostname}$ #{cmd}"
     @ssh.stream "TERM='#{ENV['TERM'] || 'vt100'}' #{cmd}"
   end
 
-  def bootstrapped?
-    !@instance.tags['Bootstrapped'].nil?
+  def dropbear path, str
+    raise 'No instance' if @instance.nil?
+    connect if @ssh.nil?
+
+    # To make things easier on droppers, try to detect--and strip--leading
+    # indentation
+    min_indent = str.gsub(/[\r\n]+/, "\n").scan(/^ */).map(&:length).min
+    str = str.gsub(/^ {#{min_indent}}/, '')
+
+    $log.info "Dropping a file to #{path}:"
+    $log.info str
+    @ssh.dropbear path, str
   end
 
   private
-  def connect key
+  def connect
+    key = fetch_secret "#{self.class::KEY_NAME}.pem"
+    begin
+      @ssh = start_ssh key
+      $log.info "Connected via SSH"
+    rescue SystemCallError, Timeout::Error, Net::SSH::Disconnect => e
+      # From the sample code: "port 22 might not be available immediately
+      # after the instance finishes launching"
+      $log.info "SSH unavailable. Trying again in 1s!"
+      sleep 1
+      retry
+    end
+  end
+  def start_ssh key
     user = bootstrapped? ? 'root' : 'ubuntu'
     Net::SSH.start ip, user, :key_data => [key], :proxy => Gateway
   end

@@ -78,4 +78,25 @@ class Net::SSH::Connection::Session
       fd.flush
     end
   end
+
+  # The Drop Bear, Thylarctos plummetus, is a large, arboreal, predatory
+  # marsupial related to the Koala.
+  #
+  # Drop Bears hunt by ambushing ground dwelling animals from above, waiting up
+  # to as much as four hours to make a surprise kill. Once prey is within view,
+  # the Drop Bear will drop as much as eight metres to pounce on top of the
+  # unsuspecting victim. The initial impact often stuns the prey, allowing it to
+  # be bitten on the neck and quickly subdued.
+  #
+  # In their spare time, Drop Bears have been known to drop files on remote
+  # servers with stunning accuracy.
+  def dropbear path, str
+    exec! "sudo mkdir -p \"$(dirname #{shellescape path})\""
+
+    channel = exec "sudo tee #{shellescape path} > /dev/null"
+    channel.send_data str
+    channel.eof!
+
+    channel.wait
+  end
 end
