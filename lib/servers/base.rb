@@ -155,6 +155,7 @@ class Server
     end
   end
   alias_method :ip, :private_ip_address
+  alias_method :public_ip, :ip_address
 
   def bootstrapped?
     !@instance.tags['Bootstrapped'].nil?
