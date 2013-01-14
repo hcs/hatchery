@@ -87,6 +87,7 @@ class Server
     ssh 'sudo apt-get update'
     ssh 'sudo apt-get dist-upgrade -y'
 
+    ssh 'sudo apt-get update'
     ssh 'sudo apt-get install -y bcfg2'
 
     dropbear '/etc/ssl/certs/config.pem', <<-END
