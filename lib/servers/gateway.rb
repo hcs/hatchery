@@ -18,6 +18,8 @@ class GatewayServer < Server
 
     ssh_hook
 
+    ssh 'echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward'
+
     $log.info "Be sure to change the routing tables to go through instance #{id}"
   end
 
