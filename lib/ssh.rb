@@ -1,6 +1,7 @@
 require 'thread'
 require 'socket'
 
+# TODO: multiple gateways?
 class Gateway
   @@ssh = nil
   @@lock = Mutex.new
@@ -70,9 +71,13 @@ class Gateway
   end
 end
 
-class Net::SSH::Connection::Session
-  def stream cmd
-    exec! cmd do |ch, stream, data|
+module SSHable
+  def ssh cmd
+    raise 'No instance' if instance.nil?
+    connect if @ssh.nil?
+
+    $log.info "#{@hostname}$ #{cmd}"
+    @ssh.exec! "TERM='#{ENV['TERM'] || 'vt100'}' #{cmd}" do |ch, stream, data|
       fd = stream == :stderr ? $stderr : $stdout
       fd.print data
       fd.flush
@@ -91,12 +96,42 @@ class Net::SSH::Connection::Session
   # In their spare time, Drop Bears have been known to drop files on remote
   # servers with stunning accuracy.
   def dropbear path, str
-    exec! "sudo mkdir -p \"$(dirname #{shellescape path})\""
+    raise 'No instance' if @instance.nil?
+    connect if @ssh.nil?
 
-    channel = exec "sudo tee #{shellescape path} > /dev/null"
+    # To make things easier on droppers, try to detect--and strip--leading
+    # indentation
+    min_indent = str.gsub(/[\r\n]+/, "\n").scan(/^ */).map(&:length).min
+    str = str.gsub(/^ {#{min_indent}}/, '')
+
+    $log.info "Dropping a file to #{path}:"
+    $log.info str
+
+    @ssh.exec! "sudo mkdir -p \"$(dirname #{shellescape path})\""
+
+    channel = @ssh.exec "sudo tee #{shellescape path} > /dev/null"
     channel.send_data str
     channel.eof!
 
     channel.wait
+  end
+
+  private
+  def connect
+    key = fetch_secret "#{self.class::KEY_NAME}.pem"
+    begin
+      @ssh = start_ssh key
+      $log.info "Connected via SSH"
+    rescue SystemCallError, Timeout::Error, Net::SSH::Disconnect => e
+      # From the sample code: "port 22 might not be available immediately
+      # after the instance finishes launching"
+      $log.info "SSH unavailable. Trying again in 1s!"
+      sleep 1
+      retry
+    end
+  end
+  def start_ssh key
+    user = bootstrapped? ? 'root' : 'ubuntu'
+    Net::SSH.start ip, user, :key_data => [key], :proxy => Gateway
   end
 end
