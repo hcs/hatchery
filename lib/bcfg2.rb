@@ -69,6 +69,7 @@ module Bcfg2
     # time (for instance, the hcs user is not created in time on the first
     # invocation to have files chowned to it).
     ssh 'sudo bcfg2 -vqe'
+    ssh 'sudo apt-get update'
     ssh 'sudo bcfg2 -vqe'
 
     ssh 'sudo deluser --remove-home ubuntu'
