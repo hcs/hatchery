@@ -68,10 +68,10 @@ module Bcfg2
     # We need to run at least twice, since some things come out wrong the first
     # time (for instance, the hcs user is not created in time on the first
     # invocation to have files chowned to it).
-    ssh 'bcfg2 -vqe'
-    ssh 'bcfg2 -vqe'
+    ssh 'sudo bcfg2 -vqe'
+    ssh 'sudo bcfg2 -vqe'
 
-    ssh 'deluser --remove-home ubuntu'
+    ssh 'sudo deluser --remove-home ubuntu'
 
     @instance.tags['Bootstrapped'] = 'true'
   end
