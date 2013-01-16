@@ -132,6 +132,10 @@ module SSHable
   end
   def start_ssh key
     user = bootstrapped? ? 'root' : 'ubuntu'
-    Net::SSH.start ip, user, :key_data => [key], :proxy => Gateway
+    if self.class::PUBLIC
+      Net::SSH.start public_ip, user, :key_data => [key]
+    else
+      Net::SSH.start ip, user, :key_data => [key], :proxy => Gateway
+    end
   end
 end
