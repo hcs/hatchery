@@ -4,7 +4,7 @@ class LoginServer < Server
   PUBLIC = true
 
   def create_hook
-    $log.info "Allocating an IP address for the gateway"
+    $log.info "Allocating an IP address for the login server"
     @instance.ip_address = $EC2.elastic_ips.allocate :vpc => true
     $log.info "Allocated IP #{@instance.ip_address}"
 
