@@ -1,21 +1,20 @@
 require 'thread'
 require 'socket'
 
-# TODO: multiple gateways?
-class Gateway
+class Bifrost
   @@ssh = nil
   @@lock = Mutex.new
   def self.connect!
     return unless @@ssh.nil?
 
     # We need to require here to prevent a circular dependency
-    require 'lib/servers/gateway'
+    require 'lib/servers/bifrost'
 
     # TODO: hcs.harvard.edu
-    host = 'gateway.hcs.so'
-    key = fetch_secret "#{GatewayServer::KEY_NAME}.pem"
+    host = 'bifrost.hcs.so'
+    key = fetch_secret "#{BifrostServer::KEY_NAME}.pem"
 
-    $log.info "Establishing connection to gateway server #{host}"
+    $log.info "Establishing connection to bifrost server #{host}"
     @@ssh = Net::SSH.start host, 'ubuntu', :key_data => [key]
 
     Thread.new do
@@ -135,7 +134,7 @@ module SSHable
     if self.class::PUBLIC
       Net::SSH.start public_ip, user, :key_data => [key]
     else
-      Net::SSH.start ip, user, :key_data => [key], :proxy => Gateway
+      Net::SSH.start ip, user, :key_data => [key], :proxy => Bifrost
     end
   end
   def disconnect

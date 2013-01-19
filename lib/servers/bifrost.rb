@@ -1,4 +1,4 @@
-class GatewayServer < Server
+class BifrostServer < Server
   AMI = 'ami-fd20ad94' # Ubuntu 12.04.1 LTS, using EBS
   INSTANCE_TYPE = 't1.micro'
   IP_RANGE = 10...15
@@ -6,7 +6,7 @@ class GatewayServer < Server
   PUBLIC = true
 
   def create_hook
-    $log.info "Allocating an IP address for the gateway"
+    $log.info "Allocating an IP address for the bifrost"
     @instance.ip_address = $EC2.elastic_ips.allocate :vpc => true
     $log.info "Allocated IP #{@instance.ip_address}"
 
