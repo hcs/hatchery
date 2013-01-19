@@ -138,4 +138,8 @@ module SSHable
       Net::SSH.start ip, user, :key_data => [key], :proxy => Gateway
     end
   end
+  def disconnect
+    @ssh.close
+    @ssh = nil
+  end
 end

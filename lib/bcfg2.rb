@@ -62,8 +62,14 @@ module Bcfg2
   def bootstrap
     raise 'Already bootstrapped' if bootstrapped?
 
-    # This is a safety net, since we're about to remove the ubuntu user
-    ssh 'curl -s http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key | sudo tee /root/.ssh/authorized_keys > /dev/null'
+    # Allow SSH as root, since we're about to nuke the ubuntu user
+    key_url = 'http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key'
+    ssh "curl -s #{key_url} | sudo tee /root/.ssh/authorized_keys > /dev/null"
+    disconnect
+
+    @instance.tags['Bootstrapped'] = 'true'
+    ssh 'sudo killall -u ubuntu'
+    ssh 'sudo deluser --remove-home ubuntu'
 
     # We need to run at least twice, since some things come out wrong the first
     # time (for instance, the hcs user is not created in time on the first
@@ -71,10 +77,6 @@ module Bcfg2
     ssh 'sudo bcfg2 -vqe'
     ssh 'sudo apt-get update'
     ssh 'sudo bcfg2 -vqe'
-
-    ssh 'sudo deluser --remove-home ubuntu'
-
-    @instance.tags['Bootstrapped'] = 'true'
   end
 
   def bootstrapped?
