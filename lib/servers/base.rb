@@ -11,13 +11,21 @@ class Server
   INSTANCE_TYPE = 'm1.small'
   PUBLIC = false
 
-  # Factory magic!
   class << self
     alias_method :the_real_new, :new
 
+    # Factory magic!
     def new hostname
       h = Hostname.new hostname
       h.server_class.the_real_new h
+    end
+
+    def all
+      AWS.memoize do
+        $EC2.instances.map do |instance|
+          new instance.tags['Name'] rescue nil
+        end
+      end
     end
   end
 
