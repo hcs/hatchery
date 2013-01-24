@@ -59,6 +59,10 @@ module Bcfg2
     END
   end
 
+  def bcfg2 full=false
+    ssh 'sudo bcfg2 -vqe'
+  end
+
   def bootstrap
     raise 'Already bootstrapped' if bootstrapped?
 
@@ -74,9 +78,9 @@ module Bcfg2
     # We need to run at least twice, since some things come out wrong the first
     # time (for instance, the hcs user is not created in time on the first
     # invocation to have files chowned to it).
-    ssh 'sudo bcfg2 -vqe'
+    bcfg2
     ssh 'sudo apt-get update'
-    ssh 'sudo bcfg2 -vqe'
+    bcfg2
   end
 
   def bootstrapped?
