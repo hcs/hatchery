@@ -59,7 +59,7 @@ module Bcfg2
     END
   end
 
-  def bcfg2 full=false
+  def bcfg2
     ssh 'sudo bcfg2 -vqe'
   end
 
