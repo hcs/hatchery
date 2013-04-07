@@ -1,6 +1,6 @@
 module Bcfg2
   def install_bcfg2
-    ssh 'sudo add-apt-repository -y ppa:bcfg2/precisetesting'
+    ssh 'sudo add-apt-repository -y ppa:bcfg2/ppa'
     ssh 'sudo apt-get update'
     ssh 'sudo apt-get install -y bcfg2'
 
