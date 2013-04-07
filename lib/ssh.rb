@@ -15,7 +15,7 @@ class Bifrost
     key = fetch_secret "#{BifrostServer::KEY_NAME}.pem"
 
     $log.info "Establishing connection to bifrost server #{host}"
-    @@ssh = Net::SSH.start host, 'ubuntu', :key_data => [key]
+    @@ssh = Net::SSH.start host, 'hcs', :key_data => [key]
 
     Thread.new do
       loop do
