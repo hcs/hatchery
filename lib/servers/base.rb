@@ -58,7 +58,7 @@ class Server
       raise "Instance is already gone (or maybe never existed)!"
     end
 
-    disconnect
+    disconnect unless @ssh.nil?
 
     # TODO: think about cleaning up EIPs?
     @instance.terminate
