@@ -16,4 +16,11 @@ class ConfigServer < Server
     key = fetch_secret 'bcfg2-crypt-key'
     ssh "sudo /var/lib/bcfg2/bin/bootstrap #{key}"
   end
+
+  def pull
+    ssh 'cd /var/lib/bcfg2 && sudo git pull'
+  end
+  def version
+    ssh 'cd /var/lib/bcfg2 && sudo git rev-parse HEAD'
+  end
 end
