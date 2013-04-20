@@ -2,5 +2,10 @@
 
 root=$(dirname $0)/..
 
+irb=irb
+if which -s pry; then
+  irb=pry
+fi
+
 cd "$root"
-exec irb -I. -r hatchery
+exec "$irb" -I. -r hatchery
