@@ -64,6 +64,7 @@ class Server
     @instance.terminate
     @instance = nil
   end
+  alias_method :destroy, :terminate
 
   ### Hooks
 
