@@ -41,34 +41,16 @@ class Server
   end
 
   def create
-    if !@instance.nil? && @instance.status != :terminated
-      raise "Instance is already running! Refusing to create a duplicate"
-    end
-
-    $log.info "About to start instance #{@hostname} of type #{self.class.name}"
-
-    # The self.class::CONSTANT thing here is so subclasses can override the
-    # constants in a reasonable way
-    @instance = $EC2.instances.create(
-      :image_id           => self.class::AMI,
-      :instance_type      => self.class::INSTANCE_TYPE,
-      :key_name           => self.class::KEY_NAME,
-      :security_group_ids => self.class::SECURITY_GROUPS,
-      :subnet             => @hostname.subnet,
-      :private_ip_address => @hostname.ip
-    )
-    @instance.tag 'Name', :value => @hostname.to_s
-
-    $log.info "Waiting for #{@hostname}"
-    sleep 1 while status == :pending
+    create_instance
+    wait
 
     $log.info "Launched instance #{id}, status: #{status}"
-
     raise "Status error!" unless status == :running
 
     create_hook
 
-    $log.info "Everything is shiny. Have fun with #{@hostname}"
+    $log.info "Everything is shiny, Capt'n!"
+    $log.info "If this machine is bcfg2'd, try running Server#bootstrap next"
   end
 
   def terminate
@@ -109,4 +91,32 @@ class Server
   end
   alias_method :ip, :private_ip_address
   alias_method :public_ip, :ip_address
+
+  # Actually do the dirty work of creating the instance through the AWS API
+  def create_instance
+    if !@instance.nil? && @instance.status != :terminated
+      raise "Instance is already running! Refusing to create a duplicate"
+    end
+
+    $log.info "About to create instance #{@hostname} of type #{self.class.name}"
+
+    # The self.class::CONSTANT thing here is so subclasses can override the
+    # constants in a reasonable way
+    @instance = $EC2.instances.create(
+      :image_id           => self.class::AMI,
+      :instance_type      => self.class::INSTANCE_TYPE,
+      :key_name           => self.class::KEY_NAME,
+      :security_group_ids => self.class::SECURITY_GROUPS,
+      :subnet             => @hostname.subnet,
+      :private_ip_address => @hostname.ip
+    )
+    @instance.tag 'Name', :value => @hostname.to_s
+  end
+
+  # Some states mean that the instance is busy performing some action for us.
+  # This is a generalized function that waits until that action is done.
+  def wait
+    $log.info "Waiting for #{@hostname}"
+    sleep 1 while [:pending, :'shutting-down', :stopping].include? status
+  end
 end
