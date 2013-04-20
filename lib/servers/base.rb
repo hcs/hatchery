@@ -23,7 +23,7 @@ class Server
     def all
       AWS.memoize do
         $EC2.instances.map do |instance|
-          new instance.tags['Name'] rescue nil
+          new instance.tags['Name'] rescue nil if instance.status != :terminated
         end
       end
     end
