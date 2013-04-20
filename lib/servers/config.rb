@@ -17,6 +17,10 @@ class ConfigServer < Server
     ssh "sudo /var/lib/bcfg2/bin/bootstrap #{key}"
   end
 
+  def bcfg2
+    ssh 'sudo bcfg2 -C /etc/bcfg2-bootstrap.conf -vqe'
+  end
+
   def pull
     ssh 'cd /var/lib/bcfg2 && sudo git pull'
   end
