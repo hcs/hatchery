@@ -1,11 +1,21 @@
 #!/bin/bash
 
 root=$(dirname $0)/..
+cd "$root"
 
+# Detect which ruby shell we should use
 irb=irb
 if which -s pry; then
   irb=pry
 fi
 
-cd "$root"
-exec "$irb" -I. -r hatchery
+# If we weren't passed any arguments, drop into a shell
+if [ $# -eq 0 ]; then
+  exec "$irb" -I. -r hatchery
+fi
+
+# If not, we were called in oneline mode
+hostname="$1"
+shift
+
+exec ruby -I. -r hatchery -e "s = Server.new '$hostname'; ARGV.each { |arg| puts s.send(arg) }" -- "$@"
