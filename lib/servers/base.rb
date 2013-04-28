@@ -66,6 +66,15 @@ class Server
   end
   alias_method :destroy, :terminate
 
+  def reboot
+    if @instance.nil? || @instance.status == :terminated
+      raise "What instance?"
+    end
+
+    @instance.reboot
+    wait
+  end
+
   ### Hooks
 
   def create_hook
