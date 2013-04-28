@@ -62,6 +62,7 @@ class Server
 
     # TODO: think about cleaning up EIPs?
     @instance.terminate
+    wait
     @instance = nil
   end
   alias_method :destroy, :terminate
