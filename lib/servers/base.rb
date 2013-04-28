@@ -5,7 +5,7 @@ class Server
   include SSHable
   include Bcfg2
 
-  AMI = 'ami-d726abbe' # Ubuntu 12.04.1 LTS, using instance store
+  AMI = 'ami-2efa9d47' # Ubuntu 12.04.1 LTS, using instance store
   KEY_NAME = 'HCS'
   SECURITY_GROUPS = ['sg-5813f837']
   INSTANCE_TYPE = 'm1.small'

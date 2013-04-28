@@ -1,5 +1,5 @@
 class BifrostServer < Server
-  AMI = 'ami-fd20ad94' # Ubuntu 12.04.1 LTS, using EBS
+  AMI = 'ami-d0f89fb9' # Ubuntu 12.04.1 LTS, using EBS
   INSTANCE_TYPE = 't1.micro'
   IP_RANGE = 10...15
   SECURITY_GROUPS = ['sg-1347827c']
